@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VTH-dashboard</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:ital,wdth,wght@1,87.5,500&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>html,body{margin:0}body{background:var(--bg)}.mee{min-height:100vh}.wrap{padding-left:16px;padding-right:16px}</style>
+</head><body class="meekijk">
+<div class="mee"><header class="meekop"><span class="clogo" role="img" aria-label="Centric"></span><span class="meelabel">VTH-dashboard</span></header>
+<main id="vmain" class="meemain"><div class="meeleeg"><b>Dashboard laden…</b></div></main>
+<aside id="onderb" class="onderb" hidden aria-label="Uitleg"></aside>
+<footer class="meevoet"><span class="clogo-m" role="img" aria-label="Centric"></span><span>Fictieve data. De cijfers zijn op dit apparaat uitgerekend.</span></footer></div>
+<script>
+(async function () {
+  var CODES = ['GM0484', 'GM0345', 'GM0632'], KA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  function fout(t) { document.getElementById('vmain').innerHTML = '<div class="meeleeg"><b>' + t + '</b><span>Scan de QR-code bij het dashboard op het scherm opnieuw.</span></div>'; }
+  var h = (location.hash || '').replace(/^#/, ''); if (h.indexOf('d-') === 0) h = h.slice(2);
+  if (!h) { fout('Geen dashboard in deze link.'); return; }
+  var gem;
+  try {
+    if (h[0] === 'A') gem = CODES[KA.indexOf(h[1])];
+    else {
+      var s = h.slice(1).replace(/-/g, '+').replace(/_/g, '/'); s += '==='.slice((s.length + 3) % 4);
+      var bytes = Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); });
+      if (h[0] === 'z') bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+      window.__RIJK = JSON.parse(new TextDecoder().decode(bytes)); gem = window.__RIJK.g;
+    }
+    if (CODES.indexOf(gem) < 0) throw new Error('gemeente');
+    var r = await fetch('data/' + gem + '.json'); if (!r.ok) throw new Error('data');
+    window.__SETS = {}; window.__SETS[gem] = await r.json(); window.__PAYLOAD = h;
+    var sc = document.createElement('script'); sc.src = 'app.js'; document.body.appendChild(sc);
+  } catch (e) { fout('Dit dashboard kon niet worden geladen.'); }
+})();
+</script>
+</body></html>
